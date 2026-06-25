@@ -8,12 +8,13 @@ export default function Cadastro() {
   const [senha, setSenha] = useState("");
   const [habito, setHabito] = useState("");
   const [detalhe, setDetalhe] = useState("");
-  const [multa, setMulta] = useState(5.00);
+  const [multa, setMulta] = useState<number | "">(5.00);
   const [destino, setDestino] = useState<"poupanca"|"entidade">("poupanca");
 
   const handleSalvar = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem("lack_usuario", JSON.stringify({ nome, email, senha, habito, detalhe, multa, destino }));
+    const multaFinal = multa === "" || multa <= 0 ? 5 : multa;
+    localStorage.setItem("lack_usuario", JSON.stringify({ nome, email: email.trim().toLowerCase(), senha, habito, detalhe, multa: multaFinal, destino }));
     localStorage.setItem("lack_indicadores", JSON.stringify({
       diasSemReincidencia: 0, maiorSequencia: 0, totalDepositado: 0,
       ultimaReincidencia: new Date().toISOString()
@@ -72,7 +73,10 @@ export default function Cadastro() {
               <div className="relative">
                 <span className="absolute left-0 top-3 text-sm text-gray-500">R$</span>
                 <input type="number" min="0.01" step="0.50" value={multa}
-                  onChange={e => setMulta(parseFloat(e.target.value) || 5)}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setMulta(val === "" ? "" : parseFloat(val));
+                  }}
                   className="w-full pl-8 py-3 border-b-2 border-green-400 focus:outline-none text-sm bg-transparent font-semibold text-gray-800"/>
               </div>
               <p className="text-xs text-gray-400 mt-1">Você pode alterar para o valor que preferir</p>
