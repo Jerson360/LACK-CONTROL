@@ -7,6 +7,9 @@ export default function Login() {
   const [senha, setSenha] = useState("");
   const [mostrar, setMostrar] = useState(false);
   const [erro, setErro] = useState("");
+  const [mostrarImportar, setMostrarImportar] = useState(false);
+  const [codigoImport, setCodigoImport] = useState("");
+  const [msgImport, setMsgImport] = useState("");
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,13 +17,25 @@ export default function Login() {
     const raw = localStorage.getItem("lack_usuario");
     if (raw) {
       const u = JSON.parse(raw);
-      if (u.email === email && u.senha === senha) {
+      if (u.email === email.trim().toLowerCase() && u.senha === senha) {
         localStorage.setItem("lack_sessao_ativa", "true");
         setLocation("/home");
         return;
       }
     }
-    setErro("E-mail ou senha incorretos.");
+    setErro("E-mail ou senha incorretos. Se cadastrou em outro aparelho, use 'Importar dados' abaixo.");
+  };
+
+  const handleImportar = () => {
+    try {
+      const dados = JSON.parse(atob(codigoImport.trim()));
+      if (!dados.lack_usuario) { setMsgImport("Código inválido."); return; }
+      Object.keys(dados).forEach(k => localStorage.setItem(k, JSON.stringify(dados[k])));
+      localStorage.setItem("lack_sessao_ativa", "true");
+      setLocation("/home");
+    } catch {
+      setMsgImport("Código inválido. Verifique e tente novamente.");
+    }
   };
 
   return (
@@ -75,6 +90,28 @@ export default function Login() {
             className="w-full py-4 rounded-xl font-black text-sm tracking-widest transition-all border-2 border-red-500 text-red-500 hover:bg-red-50">
             CADASTRAR
           </button>
+
+          <button type="button" onClick={() => setMostrarImportar(!mostrarImportar)}
+            className="w-full py-2 text-xs text-gray-400 underline text-center">
+            Cadastrei em outro aparelho → Importar dados
+          </button>
+
+          {mostrarImportar && (
+            <div className="flex flex-col gap-2 p-4 border border-gray-200 rounded-xl bg-gray-50">
+              <p className="text-xs text-gray-500 text-center">Cole o código gerado na tela de Perfil do outro aparelho</p>
+              <textarea
+                value={codigoImport}
+                onChange={e => setCodigoImport(e.target.value)}
+                placeholder="Cole o código aqui..."
+                className="w-full border border-gray-200 rounded-xl p-3 text-xs focus:outline-none focus:border-green-400 bg-white resize-none h-20"
+              />
+              {msgImport && <p className="text-xs text-red-500 text-center">{msgImport}</p>}
+              <button type="button" onClick={handleImportar}
+                className="w-full py-2 rounded-xl text-white text-sm font-semibold" style={{background:"#1FAA6B"}}>
+                Importar e Entrar
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
