@@ -9,12 +9,33 @@ export default function Perfil() {
   const [novaSenha, setNovaSenha] = useState("");
   const [msg, setMsg] = useState("");
   const [nomeUsuario, setNomeUsuario] = useState("Usuário");
+  const [codigoExport, setCodigoExport] = useState("");
+  const [mostrarExport, setMostrarExport] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("lack_sessao_ativa") !== "true") { setLocation("/login"); return; }
     const raw = localStorage.getItem("lack_usuario");
     if (raw) { const u = JSON.parse(raw); if (u.nome) setNomeUsuario(u.nome); }
   }, [setLocation]);
+
+  const handleExportar = () => {
+    const dados: Record<string, unknown> = {};
+    ["lack_usuario", "lack_indicadores", "lack_historico"].forEach(k => {
+      const val = localStorage.getItem(k);
+      if (val) dados[k] = JSON.parse(val);
+    });
+    const codigo = btoa(JSON.stringify(dados));
+    setCodigoExport(codigo);
+    setMostrarExport(true);
+  };
+
+  const handleCopiar = () => {
+    navigator.clipboard.writeText(codigoExport).then(() => {
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2000);
+    });
+  };
 
   const handleAlterarSenha = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,6 +95,26 @@ export default function Perfil() {
           style={{background:"#F57C00"}}>
           👥 JOGADORES
         </button>
+
+        <button onClick={handleExportar}
+          className="w-full py-4 rounded-xl text-white font-semibold text-sm flex items-center gap-3 px-4 transition-all"
+          style={{background:"#1a1a2e"}}>
+          📲 Transferir para outro aparelho
+        </button>
+
+        {mostrarExport && (
+          <div className="flex flex-col gap-2 p-4 border border-gray-200 rounded-xl bg-gray-50">
+            <p className="text-xs text-gray-500 text-center font-semibold">Cole este código no outro aparelho → Login → "Importar dados"</p>
+            <textarea readOnly value={codigoExport}
+              className="w-full border border-gray-200 rounded-xl p-3 text-xs bg-white resize-none h-20 break-all"
+            />
+            <button onClick={handleCopiar}
+              className="w-full py-2 rounded-xl text-white text-sm font-semibold transition-all"
+              style={{background: copiado ? "#1FAA6B" : "#1a1a2e"}}>
+              {copiado ? "✓ Copiado!" : "Copiar código"}
+            </button>
+          </div>
+        )}
 
         <div className="border border-gray-200 rounded-xl p-4">
           <p className="text-xs text-gray-400 text-center mb-3 tracking-widest">COMPARTILHAR</p>
