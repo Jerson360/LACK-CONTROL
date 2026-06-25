@@ -1,20 +1,43 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useLackData } from "@/hooks/use-lack-data";
 import BottomNav from "@/pages/bottom-nav";
+import EuVenci from "@/pages/eu-venci";
+
+const META_DIAS = 90;
 
 export default function Indicadores() {
   const [, setLocation] = useLocation();
   const { indicadores, isLoadingIndicadores } = useLackData();
+  const [mostrarVitoria, setMostrarVitoria] = useState(false);
 
   useEffect(() => {
     if (localStorage.getItem("lack_sessao_ativa") !== "true") setLocation("/login");
   }, [setLocation]);
 
+  // Detecta automaticamente ao atingir 90 dias
+  useEffect(() => {
+    if (!indicadores) return;
+    const dias = indicadores.diasSemReincidencia || 0;
+    if (dias >= META_DIAS) {
+      // Só mostra uma vez por sessão, não fica reabrindo
+      const jaViu = sessionStorage.getItem("venci_exibido");
+      if (!jaViu) {
+        sessionStorage.setItem("venci_exibido", "true");
+        setMostrarVitoria(true);
+      }
+    }
+  }, [indicadores]);
+
+  if (mostrarVitoria) {
+    return <EuVenci onFechar={() => setMostrarVitoria(false)} />;
+  }
+
   const dias = indicadores?.diasSemReincidencia || 0;
   const recorde = indicadores?.maiorSequencia || 0;
   const total = indicadores?.totalDepositado || 0;
-  const progresso = recorde > 0 ? Math.min((dias / recorde) * 100, 100) : 0;
+  const progresso = Math.min((dias / META_DIAS) * 100, 100);
+  const atingiuMeta = dias >= META_DIAS;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -56,15 +79,35 @@ export default function Indicadores() {
           </div>
         </div>
 
+        {/* Barra de progresso rumo aos 90 dias */}
         <div className="flex flex-col gap-2">
-          <div className="flex justify-between">
-            <span className="text-sm font-semibold text-gray-800">Barra de progresso</span>
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-semibold text-gray-800">Progresso (meta: 90 dias)</span>
             <span className="text-xs text-gray-400">{Math.round(progresso)}%</span>
           </div>
           <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden border border-gray-200">
-            <div className="h-full rounded-full transition-all duration-700" style={{width:`${progresso}%`, background:"#1FAA6B"}}/>
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{width:`${progresso}%`, background: atingiuMeta ? "#E53935" : "#1FAA6B"}}
+            />
           </div>
+          <p className="text-xs text-gray-400 text-right">
+            {atingiuMeta ? "🎉 Meta atingida!" : `${META_DIAS - dias} dias restantes para a vitória`}
+          </p>
         </div>
+
+        {/* Botão EU VENCI — aparece sempre mas destacado quando atingiu */}
+        <button
+          onClick={() => setMostrarVitoria(true)}
+          className="w-full py-4 rounded-2xl font-black text-sm tracking-widest transition-all flex items-center justify-center gap-2"
+          style={{
+            background: atingiuMeta ? "#E53935" : "#1a1a2e",
+            color: "#fff",
+            boxShadow: atingiuMeta ? "0 0 20px #E5393566" : "none"
+          }}
+        >
+          🏆 {atingiuMeta ? "VER MINHA CONQUISTA!" : "EU VENCI! (prévia)"}
+        </button>
 
         <div className="border-2 border-yellow-200 rounded-xl px-4 py-3 text-center" style={{background:"#FDFBF0"}}>
           <p className="text-xs text-gray-700">O maior poder, é o poder sobre si mesmo!</p>
