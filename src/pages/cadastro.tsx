@@ -72,7 +72,7 @@ export default function Cadastro() {
               <label className="text-xs text-gray-500">Multa (R$) — sugestão: R$ 5,00</label>
               <div className="relative">
                 <span className="absolute left-0 top-3 text-sm text-gray-500">R$</span>
-                <input type="number" min="0.01" step="0.50" value={multa}
+                <input type="number" min="1" step="1" value={multa}
                   onChange={e => {
                     const val = e.target.value;
                     setMulta(val === "" ? "" : parseFloat(val));
