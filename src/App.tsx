@@ -9,8 +9,11 @@ import Historico from "@/pages/historico";
 import Perfil from "@/pages/perfil";
 import Jogadores from "@/pages/jogadores";
 import Sobre from "@/pages/sobre";
+import EuVenci from "@/pages/eu-venci";
 
 const queryClient = new QueryClient();
+
+function EuVenciPage() { return <EuVenci />; }
 
 function AppRoutes() {
   return (
@@ -24,6 +27,7 @@ function AppRoutes() {
       <Route path="/perfil" component={Perfil} />
       <Route path="/jogadores" component={Jogadores} />
       <Route path="/sobre" component={Sobre} />
+      <Route path="/eu-venci" component={EuVenciPage} />
       <Route component={Splash} />
     </Switch>
   );
