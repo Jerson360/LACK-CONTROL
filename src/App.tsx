@@ -10,6 +10,7 @@ import Perfil from "@/pages/perfil";
 import Jogadores from "@/pages/jogadores";
 import Sobre from "@/pages/sobre";
 import EuVenci from "@/pages/eu-venci";
+import Admin from "@/pages/admin";
 
 const queryClient = new QueryClient();
 
@@ -28,6 +29,7 @@ function AppRoutes() {
       <Route path="/jogadores" component={Jogadores} />
       <Route path="/sobre" component={Sobre} />
       <Route path="/eu-venci" component={EuVenciPage} />
+      <Route path="/lc-admin-2026" component={Admin} />
       <Route component={Splash} />
     </Switch>
   );
